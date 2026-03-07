@@ -1,6 +1,6 @@
 # Whisper-PTT
 
-Voice-to-text tools shouldn't require blind trust. **Whisper-PTT** is a **single-file push-to-talk** utility: it turns your speech into text locally with Whisper, then optionally polishes it with an LLM pass (Ollama) — cleaning up filler words, fixing grammar, and adding punctuation. Both steps run fully offline; nothing leaves your machine. The whole source is short enough to read over coffee — you can verify exactly where your audio goes. **Hold a hotkey → speak → release** → clean text appears in your active window (or clipboard). That's it.
+**Local · Push-to-talk · Offline.** Voice-to-text tools shouldn't require blind trust. **Whisper-PTT** is a **single-file push-to-talk** utility: it turns your speech into text locally with Whisper, then optionally polishes it with an LLM pass (Ollama) — cleaning up filler words, fixing grammar, and adding punctuation. Both steps run fully offline; nothing leaves your machine. The whole source is short enough to read over coffee — you can verify exactly where your audio goes. **Hold a hotkey → speak → release** → clean text appears in your active window (or clipboard). That's it.
 
 The pipeline: hold the hotkey, speak, release. Whisper transcribes locally; an optional second pass through an LLM cleans the result before it's pasted into the focused window. Everything is configurable via environment variables: Whisper model, hotkey, LLM model, cleanup prompt, paste vs clipboard-only, or turn off LLM entirely. A prebuffer captures the start of your speech so the first word isn't clipped. One Python file, a handful of dependencies — no build step, no daemon, no config files you didn't ask for.
 
@@ -21,7 +21,7 @@ source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Requires **Python 3.9+**. The repo ships a pinned `requirements.txt` for reproducible installs. If you prefer minimal deps or hit conflicts (e.g. CPU-only), install the core ones: `pip install faster-whisper pyaudio keyboard pyperclip requests`. Optional: `pip install python-dotenv` to load config from a `.env` file (otherwise use env vars only).
+Requires **Python 3.9+**. The repo ships a pinned `requirements.txt` for reproducible installs. If you prefer minimal deps or hit conflicts (e.g. CPU-only), install the core ones: `pip install faster-whisper pyaudio keyboard pyperclip requests`. Optional: `pip install python-dotenv` to load config from a `.env` file; without it, only environment variables are used, and if a `.env` file exists the script will print a note to install python-dotenv.
 
 **2. (Optional) Ollama for LLM cleanup**
 
@@ -46,10 +46,10 @@ Edit `.env` as needed. Main knobs:
 | `WHISPER_PTT_WHISPER_DEVICE` | Whisper device: `cuda` or `cpu` | `cuda` |
 | `WHISPER_PTT_WHISPER_LANGUAGE` | Whisper language (`ru`, `en`, …) | `ru` |
 | `WHISPER_PTT_HOTKEY` | Hotkey (`pause`, `f9`, `f10`, `scroll lock`, …) | `pause` |
-| `WHISPER_PTT_USE_LLM_CLEANUP` | LLM cleanup: on/off | `true` |
+| `WHISPER_PTT_USE_LLM_CLEANUP` | LLM cleanup | `true` (off: `false`, `0`, `no`, `off`) |
 | `WHISPER_PTT_OLLAMA_MODEL` | Ollama model (for LLM cleanup) | `gemma3:12b` |
-| `WHISPER_PTT_COPY_TO_CLIPBOARD` | Copy to clipboard | `true` |
-| `WHISPER_PTT_PASTE_TO_ACTIVE_WINDOW` | Paste to active window | `true` |
+| `WHISPER_PTT_COPY_TO_CLIPBOARD` | Copy to clipboard | `true` (same on/off values as above) |
+| `WHISPER_PTT_PASTE_TO_ACTIVE_WINDOW` | Paste to active window | `true` (same on/off values as above) |
 | `WHISPER_PTT_KEYS_AFTER_PASTE` | Keys after paste: key(s) to send (`enter`, `ctrl+enter`, or empty/`none`) | `enter` |
 
 <details>
