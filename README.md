@@ -6,7 +6,7 @@
 
 Hold a hotkey → speak → release → text appears. That's it.
 
-<img align="left" src="assets/demo.gif" alt="Whisper-PTT demo" width="800">
+<img src="assets/demo.gif" alt="Whisper-PTT demo" width="820">
 
 </div>
 
