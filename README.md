@@ -4,7 +4,9 @@
 
 **Local voice-to-text · Push-to-talk · Offline**
 
-<img src="assets/demo.gif" alt="Whisper-PTT demo" width="720">
+Hold a hotkey → speak → release → text appears. That's it.
+
+<img src="assets/demo.gif" alt="Whisper-PTT demo" width="800">
 
 </div>
 
@@ -13,9 +15,9 @@
 
 Voice-to-text tools shouldn't require blind trust. **Whisper-PTT** is a **single-file push-to-talk** utility: it turns your speech into text locally with Whisper, then optionally polishes it with an LLM pass (Ollama) — cleaning up filler words, fixing grammar, and adding punctuation. Both steps run fully offline; nothing leaves your machine. The whole source is short enough to read over coffee — you can verify exactly where your audio goes. **Hold a hotkey → speak → release** → clean text appears in your active window (or clipboard). That's it.
 
-The pipeline: hold the hotkey, speak, release. Whisper transcribes locally; an optional second pass through an LLM cleans the result before it's pasted into the focused window. Everything is configurable via environment variables: Whisper model, hotkey, LLM model, cleanup prompt, paste vs clipboard-only, or turn off LLM entirely. A prebuffer captures the start of your speech so the first word isn't clipped. One Python file, a handful of dependencies — no build step, no daemon, no config files you didn't ask for.
+Whisper transcribes locally; an optional second pass through an LLM cleans the result before it's pasted into the focused window. Everything is configurable via environment variables: Whisper model, hotkey, LLM model, cleanup prompt, paste vs clipboard-only, or turn off LLM entirely. A prebuffer captures the start of your speech so the first word isn't clipped. One Python file, a handful of dependencies — no build step, no daemon, no config files you didn't ask for.
 
-**Why not on PyPI?**
+**PyPI?**
 
 > *Whisper-PTT is intentionally not on PyPI. The point is that you can read the entire source before running it. `pip install` would undermine that.*
 
