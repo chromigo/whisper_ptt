@@ -75,7 +75,7 @@ Edit `.env` as needed. Main knobs:
 python whisper_ptt.py
 ```
 
-First run may download the Whisper model (~3 GB for `large-v3`). No CUDA? Set `WHISPER_PTT_WHISPER_DEVICE=cpu` in `.env`.
+First run may download the Whisper model (size depends on the model you chose). No CUDA? Set `WHISPER_PTT_WHISPER_DEVICE=cpu` in `.env`.
 
 **5. Use**
 
