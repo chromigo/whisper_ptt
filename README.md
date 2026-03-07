@@ -62,7 +62,10 @@ Edit `.env` as needed. Main knobs:
 | `WHISPER_PTT_OLLAMA_MODEL` | Ollama model (for LLM cleanup) | `gemma3:12b` |
 | `WHISPER_PTT_COPY_TO_CLIPBOARD` | Copy to clipboard | `true` (same on/off values as above) |
 | `WHISPER_PTT_PASTE_TO_ACTIVE_WINDOW` | Paste to active window | `true` (same on/off values as above) |
+| `WHISPER_PTT_CLIPBOARD_AFTER_PASTE_POLICY` | Clipboard after paste (see below). Only applies when Paste is on. Must be exactly one of: `restore`, `clear`, `preserve`. | `restore` |
 | `WHISPER_PTT_KEYS_AFTER_PASTE` | Keys after paste: key(s) to send (`enter`, `ctrl+enter`, or empty/`none`) | `enter` |
+
+**Clipboard after paste** (only when **Paste to active window** is on): the app uses the clipboard to paste, then applies the policy. **restore** (default) — put back what was in the clipboard before this round, so your clipboard history is not lost. **clear** — empty the clipboard after pasting. **preserve** — leave the transcription in the clipboard. If you set this variable, it must be exactly one of these three; any other value is invalid and the app will exit with an error. When Paste is off, clipboard is only controlled by **Copy to clipboard** (copy or not).
 
 <details>
 <summary>All other variables (audio, prebuffer, advanced)</summary>

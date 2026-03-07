@@ -93,6 +93,12 @@ LLM_CLEANUP_PROMPT = _env("LLM_CLEANUP_PROMPT", DEFAULT_LLM_CLEANUP_PROMPT)
 # Output: copy to clipboard and/or paste to active window
 COPY_TO_CLIPBOARD = _env("COPY_TO_CLIPBOARD", "true", type_=bool)
 PASTE_TO_ACTIVE_WINDOW = _env("PASTE_TO_ACTIVE_WINDOW", "true", type_=bool)
+# Clipboard after paste (only when Paste is on): restore | clear | preserve
+CLIPBOARD_AFTER_PASTE_POLICY = _env("CLIPBOARD_AFTER_PASTE_POLICY", "restore").strip().lower()
+if CLIPBOARD_AFTER_PASTE_POLICY not in ("restore", "clear", "preserve"):
+    raise SystemExit(
+        f"Invalid config: CLIPBOARD_AFTER_PASTE_POLICY must be one of restore, clear, preserve (got {CLIPBOARD_AFTER_PASTE_POLICY!r})."
+    )
 # Keys after paste: key(s) to send (e.g. enter, ctrl+enter). Empty or "none" = no key.
 KEYS_AFTER_PASTE = _env("KEYS_AFTER_PASTE", "enter").strip().lower()
 if KEYS_AFTER_PASTE in ("", "none"):
@@ -272,10 +278,12 @@ def paste_to_front(text):
         if KEYS_AFTER_PASTE:
             time.sleep(0.05)
             keyboard.send(KEYS_AFTER_PASTE)
-        if not COPY_TO_CLIPBOARD:
-            pyperclip.copy(old)
         suffix = f' + "{KEYS_AFTER_PASTE.upper()}"' if KEYS_AFTER_PASTE else ""
         print(f"✅ Pasted to active window{suffix}!")
+        if CLIPBOARD_AFTER_PASTE_POLICY == "restore":
+            pyperclip.copy(old)
+        elif CLIPBOARD_AFTER_PASTE_POLICY == "clear":
+            pyperclip.copy("")
 
 
 # -----------------------------------------------------------------------------
