@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/whisper_ptt.png" alt="Whisper-PTT" width="128">
+</p>
+
 # Whisper-PTT
 
 **Local · Push-to-talk · Offline.** Voice-to-text tools shouldn't require blind trust. **Whisper-PTT** is a **single-file push-to-talk** utility: it turns your speech into text locally with Whisper, then optionally polishes it with an LLM pass (Ollama) — cleaning up filler words, fixing grammar, and adding punctuation. Both steps run fully offline; nothing leaves your machine. The whole source is short enough to read over coffee — you can verify exactly where your audio goes. **Hold a hotkey → speak → release** → clean text appears in your active window (or clipboard). That's it.
