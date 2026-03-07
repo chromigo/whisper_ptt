@@ -157,7 +157,6 @@ def prebuffer_worker():
     """Background thread: read mic into ring buffer; when recording, also append to _audio_frames."""
     global _recording, _audio_frames
     stream = _open_microphone_stream()
-    print(f"🎧 Prebuffer active (last {PREBUFFER_SEC} s)")
     while _prebuffer_running:
         try:
             chunk = stream.read(CHUNK_SIZE, exception_on_overflow=False)
@@ -177,7 +176,7 @@ def start_recording():
     with _prebuffer_lock:
         _audio_frames[:] = list(_prebuffer_deque)
     _recording = True
-    print("🎙️  Recording...")
+    print("🎙️ Recording...")
 
 
 def frames_to_wav(frames, prepend_silence_sec=0):
@@ -357,9 +356,11 @@ def main():
     _pyaudio_instance = pyaudio.PyAudio()
     _prebuffer_deque = collections.deque(maxlen=_prebuffer_size())
 
+    print(f"🎧 Prebuffer active (last {PREBUFFER_SEC} s)")
     threading.Thread(target=prebuffer_worker, daemon=True).start()
 
     print(_format_banner())
+    print(f"👂 Listening — hold {HOTKEY} to start recording.")
 
     keyboard.on_press_key(HOTKEY, _on_hotkey_press)
     keyboard.on_release_key(HOTKEY, _on_hotkey_release)
