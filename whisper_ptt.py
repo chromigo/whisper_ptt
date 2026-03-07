@@ -65,9 +65,15 @@ WHISPER_COMPUTE_TYPE = _env("WHISPER_COMPUTE_TYPE", "float16")
 WHISPER_LANGUAGE = _env("WHISPER_LANGUAGE", "en")
 WHISPER_INITIAL_PROMPT = _env("WHISPER_INITIAL_PROMPT", "English speech.")
 
-# Hotkey (hold to record, release to stop). Default: right ctrl (Windows/Linux), right cmd (macOS)
-_default_hotkey = "right cmd" if platform.system() == "Darwin" else "right ctrl"
-HOTKEY = _env("HOTKEY", _default_hotkey)
+# Hotkey (hold to record, release to stop). Default: ctrl+f12 (Windows/Linux), cmd+f12 (macOS)
+_default_hotkey = "cmd+f12" if platform.system() == "Darwin" else "ctrl+f12"
+HOTKEY = _env("HOTKEY", _default_hotkey).strip().lower().replace(" ", "")
+# Parse combo (e.g. "ctrl+f12" -> ("ctrl", "f12")) for hook; single key -> (None, hotkey)
+if "+" in HOTKEY:
+    _parts = HOTKEY.split("+", 1)
+    HOTKEY_MODIFIER, HOTKEY_KEY = _parts[0].strip(), _parts[1].strip()
+else:
+    HOTKEY_MODIFIER, HOTKEY_KEY = None, HOTKEY
 
 # LLM cleanup (Ollama)
 USE_LLM_CLEANUP = _env("USE_LLM_CLEANUP", "true", type_=bool)
@@ -312,7 +318,8 @@ def stop_recording_and_process():
 
 def _on_hotkey_press(_event=None):
     if not _recording:
-        start_recording()
+        if HOTKEY_MODIFIER is None or keyboard.is_pressed(HOTKEY_MODIFIER):
+            start_recording()
 
 
 def _on_hotkey_release(_event=None):
@@ -360,8 +367,8 @@ def main():
     print(_format_banner())
     print(f'👂 Listening — hold "{HOTKEY.upper()}" to start recording.')
 
-    keyboard.on_press_key(HOTKEY, _on_hotkey_press)
-    keyboard.on_release_key(HOTKEY, _on_hotkey_release)
+    keyboard.on_press_key(HOTKEY_KEY, _on_hotkey_press)
+    keyboard.on_release_key(HOTKEY_KEY, _on_hotkey_release)
 
     keyboard.wait("esc")
 
