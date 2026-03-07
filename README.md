@@ -2,8 +2,8 @@
   <img src="assets/whisper_ptt.png" alt="Whisper-PTT" width="192">
 </p>
 
-<p align="center">
-  <img src="assets/demo.gif" alt="Whisper-PTT demo" width="720">
+<p align="left">
+  <img src="assets/demo.gif" alt="Whisper-PTT demo" width="800">
 </p>
 
 # Whisper-PTT
