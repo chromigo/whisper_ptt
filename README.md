@@ -4,7 +4,7 @@
 
 **Local voice-to-text · Push-to-talk · Offline**
 
-<img src="assets/demo.gif" alt="Whisper-PTT demo" width="800">
+<img align="left" src="assets/demo.gif" alt="Whisper-PTT demo" width="800">
 
 </div>
 
