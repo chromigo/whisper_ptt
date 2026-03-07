@@ -212,7 +212,7 @@ def transcribe(wav_buffer):
         vad_parameters=dict(min_silence_duration_ms=500),
     )
     text = " ".join(seg.text.strip() for seg in segments).strip()
-    print(f"📝 Whisper ({time.time() - t0:.1f} s): {text}")
+    print(f"📝 Whisper ({time.time() - t0:.1f}s): {text}")
     return text, info.language
 
 
@@ -235,7 +235,7 @@ def cleanup_with_llm(raw_text, detected_lang):
             timeout=30,
         )
         result = r.json()["response"].strip()
-        print(f"✨ LLM ({time.time() - t0:.1f} s): {result}")
+        print(f"✨ LLM ({time.time() - t0:.1f}s): {result}")
         return result
     except Exception as e:
         print(f"⚠️ LLM error: {e}, using raw text")
@@ -255,8 +255,10 @@ def paste_to_front(text):
         print("✅ Done (console only)")
         return
     old = pyperclip.paste()
+    pyperclip.copy(text)
+    if COPY_TO_CLIPBOARD:
+        print("📋 Copied to clipboard!")
     if PASTE_TO_ACTIVE_WINDOW:
-        pyperclip.copy(text)
         keyboard.send("ctrl+v")
         time.sleep(0.1)
         if KEYS_AFTER_PASTE:
@@ -264,13 +266,8 @@ def paste_to_front(text):
             keyboard.send(KEYS_AFTER_PASTE)
         if not COPY_TO_CLIPBOARD:
             pyperclip.copy(old)
-        else:
-            pyperclip.copy(text)
-        suffix = f" + {KEYS_AFTER_PASTE}" if KEYS_AFTER_PASTE else ""
-        print(f"✅ Pasted{suffix}!")
-    else:
-        pyperclip.copy(text)
-        print("✅ Copied to clipboard!")
+        suffix = f' + "{KEYS_AFTER_PASTE.upper()}"' if KEYS_AFTER_PASTE else ""
+        print(f"✅ Pasted to active window{suffix}!")
 
 
 # -----------------------------------------------------------------------------
@@ -298,7 +295,7 @@ def stop_recording_and_process():
 
     frames = list(_audio_frames)
     duration_sec = len(frames) * CHUNK_SIZE / SAMPLE_RATE
-    print(f"⏹️ Recorded {duration_sec:.1f} s (with {PREBUFFER_SEC} s prebuffer)")
+    print(f"⏹️ Recorded {duration_sec:.1f}s (with {PREBUFFER_SEC}s prebuffer)")
 
     if len(frames) < MIN_FRAMES:
         print("⚠️ Recording too short")
@@ -321,7 +318,7 @@ def _on_hotkey_release(_event=None):
 
 
 def _format_banner():
-    w = 42
+    w = 75
     def line(s, width=None):
         width = width or w
         padded = (s + " " * width)[:width]
@@ -330,15 +327,14 @@ def _format_banner():
         "╔" + "═" * w + "╗\n",
         line("     🎤 Whisper-PTT ready!", w - 1) + "\n",
         line("") + "\n",
-        line(f"     Hotkey: {HOTKEY}") + "\n",
-        line("     Hold to record, release to stop") + "\n",
+        line(f'     Hotkey: "{HOTKEY.upper()}" (hold to record, release to stop and transcribe)') + "\n",
         line(f"     LLM cleanup: {'ON' if USE_LLM_CLEANUP else 'OFF'}") + "\n",
         line(f"     Copy to clipboard: {'ON' if COPY_TO_CLIPBOARD else 'OFF'}") + "\n",
         line(f"     Paste to active window: {'ON' if PASTE_TO_ACTIVE_WINDOW else 'OFF'}") + "\n",
     ]
     if PASTE_TO_ACTIVE_WINDOW:
-        parts.append(line(f"     Keys after paste: {KEYS_AFTER_PASTE or '—'}") + "\n")
-    parts.extend([line("") + "\n", line("     Ctrl+C to exit") + "\n", "╚" + "═" * w + "╝"])
+        parts.append((line(f'     Keys after paste: "{KEYS_AFTER_PASTE.upper()}"') if KEYS_AFTER_PASTE else line("     Keys after paste: —")) + "\n")
+    parts.extend([line("") + "\n", line('     "CTRL+C" to exit') + "\n", "╚" + "═" * w + "╝"])
     return "".join(parts)
 
 
@@ -356,11 +352,11 @@ def main():
     _pyaudio_instance = pyaudio.PyAudio()
     _prebuffer_deque = collections.deque(maxlen=_prebuffer_size())
 
-    print(f"🎧 Prebuffer active (last {PREBUFFER_SEC} s)")
+    print(f"🎧 Prebuffer active (last {PREBUFFER_SEC}s)")
     threading.Thread(target=prebuffer_worker, daemon=True).start()
 
     print(_format_banner())
-    print(f"👂 Listening — hold {HOTKEY} to start recording.")
+    print(f'👂 Listening — hold "{HOTKEY.upper()}" to start recording.')
 
     keyboard.on_press_key(HOTKEY, _on_hotkey_press)
     keyboard.on_release_key(HOTKEY, _on_hotkey_release)
