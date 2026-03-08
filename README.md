@@ -43,7 +43,7 @@ Pick the file for your platform and ignore the other one. They share the same `.
 Requires an **NVIDIA GPU** with CUDA support.
 
 ```bash
-git clone https://github.com/yourname/whisper-ptt.git
+git clone https://github.com/sancau/whisper-ptt.git
 cd whisper-ptt
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
@@ -59,7 +59,7 @@ On Linux, the `keyboard` library typically needs root for global hotkeys (`sudo 
 Requires an **Apple Silicon** Mac.
 
 ```bash
-git clone https://github.com/yourname/whisper-ptt.git
+git clone https://github.com/sancau/whisper-ptt.git
 cd whisper-ptt
 python -m venv venv
 source venv/bin/activate
