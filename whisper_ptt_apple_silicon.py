@@ -10,6 +10,7 @@ Optional: Ollama for LLM cleanup.
 """
 
 import os
+import queue
 import subprocess
 import time
 import threading
@@ -146,6 +147,8 @@ _prebuffer_lock = threading.Lock()
 _prebuffer_running = True
 _pyaudio_instance = None
 _mlx_model_path = None
+_transcribe_queue = queue.Queue()
+_model_ready = threading.Event()
 
 
 def _prebuffer_size():
@@ -372,22 +375,40 @@ def paste_to_front(text):
 
 
 # -----------------------------------------------------------------------------
-# Process recording (background thread)
+# Transcription worker (all MLX/Metal ops on a single thread)
 # -----------------------------------------------------------------------------
 
-def _process_recorded_frames(frames):
-    """Pipeline: frames → numpy → mlx-whisper → optional LLM → paste."""
-    audio_np = frames_to_numpy(frames, prepend_silence_sec=PADDING_SEC)
-    raw_text, lang = transcribe(audio_np)
-    if USE_LLM_CLEANUP and raw_text.strip():
-        final_text = cleanup_with_llm(raw_text, lang)
-    else:
-        final_text = raw_text
-    paste_to_front(final_text)
+def _transcription_worker():
+    """Persistent thread owning all MLX operations — Metal requires same-thread access."""
+    global _mlx_model_path
+    _mlx_model_path = _resolve_model(WHISPER_MODEL)
+    print(f"⏳ Loading mlx-whisper model '{_mlx_model_path}'... (first run downloads from HuggingFace)")
+    warmup_audio = np.zeros(SAMPLE_RATE, dtype=np.float32)
+    mlx_whisper.transcribe(
+        warmup_audio,
+        path_or_hf_repo=_mlx_model_path,
+        language=WHISPER_LANGUAGE,
+        fp16=True,
+        verbose=False,
+    )
+    print("✅ mlx-whisper loaded!")
+    _model_ready.set()
+
+    while True:
+        frames = _transcribe_queue.get()
+        if frames is None:
+            break
+        audio_np = frames_to_numpy(frames, prepend_silence_sec=PADDING_SEC)
+        raw_text, lang = transcribe(audio_np)
+        if USE_LLM_CLEANUP and raw_text.strip():
+            final_text = cleanup_with_llm(raw_text, lang)
+        else:
+            final_text = raw_text
+        paste_to_front(final_text)
 
 
 def stop_recording_and_process():
-    """Stop recording, wait for last frames, then transcribe and paste in background."""
+    """Stop recording, wait for last frames, then enqueue for transcription."""
     global _recording
     if not _recording:
         return
@@ -402,7 +423,7 @@ def stop_recording_and_process():
         print("❌ Recording too short")
         return
 
-    threading.Thread(target=_process_recorded_frames, args=(frames,), daemon=True).start()
+    _transcribe_queue.put(frames)
 
 
 # -----------------------------------------------------------------------------
@@ -442,20 +463,10 @@ def _format_banner():
 
 
 def main():
-    global _pyaudio_instance, _mlx_model_path, _prebuffer_deque
+    global _pyaudio_instance, _prebuffer_deque
 
-    _mlx_model_path = _resolve_model(WHISPER_MODEL)
-
-    print(f"⏳ Loading mlx-whisper model '{_mlx_model_path}'... (first run downloads from HuggingFace)")
-    warmup_audio = np.zeros(SAMPLE_RATE, dtype=np.float32)
-    mlx_whisper.transcribe(
-        warmup_audio,
-        path_or_hf_repo=_mlx_model_path,
-        language=WHISPER_LANGUAGE,
-        fp16=True,
-        verbose=False,
-    )
-    print("✅ mlx-whisper loaded!")
+    threading.Thread(target=_transcription_worker, daemon=True).start()
+    _model_ready.wait()
 
     _pyaudio_instance = pyaudio.PyAudio()
     _prebuffer_deque = collections.deque(maxlen=_prebuffer_size())
