@@ -418,7 +418,8 @@ def stop_recording_and_process():
     duration_sec = len(frames) * CHUNK_SIZE / SAMPLE_RATE
     print(f"⏹️ Recorded {duration_sec:.1f}s (with {PREBUFFER_SEC}s prebuffer)")
 
-    if len(frames) < MIN_FRAMES:
+    # Only process recordings longer than 1 second in total.
+    if duration_sec <= 0.7 or len(frames) < MIN_FRAMES:
         print("❌ Recording too short")
         return
 
