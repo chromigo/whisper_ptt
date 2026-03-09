@@ -12,7 +12,7 @@ httpx==0.28.1
 huggingface_hub==1.6.0
 idna==3.11
 Jinja2==3.1.6
-keyboard==0.13.5
+pynput==1.7.7
 llvmlite==0.46.0
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3

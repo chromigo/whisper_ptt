@@ -16,7 +16,6 @@ import time
 import threading
 import collections
 import numpy as np
-import keyboard
 import pyaudio
 import pyperclip
 import requests
@@ -432,12 +431,78 @@ def stop_recording_and_process():
 
 def _on_hotkey_press(_event=None):
     if not _recording:
-        if HOTKEY_MODIFIER is None or keyboard.is_pressed(HOTKEY_MODIFIER):
-            start_recording()
+        start_recording()
 
 
 def _on_hotkey_release(_event=None):
     stop_recording_and_process()
+
+
+def _start_hotkey_listener_mac():
+    """Hotkey listener using pynput on macOS (no root required, Option supported)."""
+    try:
+        from pynput import keyboard as pynput_keyboard
+    except ImportError:
+        print("❌ pynput is required on macOS. Install with:")
+        print("   pip install pynput")
+        return
+
+    Key = pynput_keyboard.Key
+    pressed = set()
+
+    def _spec_from_name(name):
+        if not name:
+            return None
+        n = str(name).strip().lower()
+        if n in ("cmd", "command", "⌘"):
+            return Key.cmd
+        if n in ("option", "opt", "alt", "⌥"):
+            return Key.alt
+        if n in ("ctrl", "control"):
+            return Key.ctrl
+        if n == "shift":
+            return Key.shift
+        if n.startswith("f") and n[1:].isdigit():
+            return getattr(Key, n, None)
+        if len(n) == 1:
+            return n
+        return None
+
+    hotkey_key_spec = _spec_from_name(HOTKEY_KEY)
+    hotkey_mod_spec = _spec_from_name(HOTKEY_MODIFIER) if HOTKEY_MODIFIER else None
+
+    def _matches(key, spec):
+        if spec is None:
+            return False
+        if isinstance(spec, str):
+            return getattr(key, "char", None) == spec
+        return key == spec
+
+    def on_press(key):
+        pressed.add(key)
+        if HOTKEY_MODIFIER is None:
+            if _matches(key, hotkey_key_spec):
+                _on_hotkey_press()
+        else:
+            if _matches(key, hotkey_key_spec) and any(
+                _matches(k, hotkey_mod_spec) for k in pressed
+            ):
+                _on_hotkey_press()
+
+    def on_release(key):
+        if key == Key.esc:
+            print("\n👋 Exiting...")
+            return False
+        if HOTKEY_MODIFIER is None:
+            if _matches(key, hotkey_key_spec):
+                _on_hotkey_release()
+        else:
+            if _matches(key, hotkey_key_spec) or _matches(key, hotkey_mod_spec):
+                _on_hotkey_release()
+        pressed.discard(key)
+
+    with pynput_keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+        listener.join()
 
 
 def _format_banner():
@@ -477,11 +542,7 @@ def main():
     print(_format_banner())
     print(f'👂 Listening — hold "{HOTKEY.upper()}" to start recording.')
 
-    _suppress_pause = (HOTKEY_KEY == "pause")
-    keyboard.on_press_key(HOTKEY_KEY, _on_hotkey_press, suppress=_suppress_pause)
-    keyboard.on_release_key(HOTKEY_KEY, _on_hotkey_release, suppress=_suppress_pause)
-
-    keyboard.wait("esc")
+    _start_hotkey_listener_mac()
 
 
 if __name__ == "__main__":
