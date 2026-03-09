@@ -4,7 +4,7 @@ Local push-to-talk voice-to-text using Whisper. Fully offline — nothing leaves
 
 Hold a hotkey, speak, release. Transcribed text is pasted into the active window (or copied to clipboard). Optionally, a local LLM (Ollama) can transform the output — fix grammar, reformat as an email, translate, or anything else you can describe in a prompt.
 
-<p align="center"><img src="assets/demo.gif" alt="Whisper-PTT demo" width="820"></p>
+<p align="center"><img src="assets/demo_apple.gif" alt="Whisper-PTT demo" width="820"></p>
 
 ---
 
